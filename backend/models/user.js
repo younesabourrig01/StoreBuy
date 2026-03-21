@@ -7,7 +7,6 @@ const userSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-
     email: {
       type: String,
       required: true,
@@ -15,12 +14,27 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-
     password: {
       type: String,
       required: true,
     },
-
+    phone_number: {
+      type: Number,
+      required: true,
+      match: ["/^(06|07)\d{8}$/", "invalid phone number"],
+    },
+    address: {
+      type: String,
+      required: true,
+    },
+    region: {
+      type: string,
+      required: true,
+    },
+    image: {
+      type: String,
+      require: false,
+    },
     role: {
       type: String,
       enum: ["user", "admin"],
