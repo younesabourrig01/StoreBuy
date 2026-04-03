@@ -5,6 +5,6 @@ done:
 ----------------------
 wait : 
   create an api gateway 
-  create auth-service
+  create auth-service (routes + finaltests needed)
   create product-service
 ----------------------

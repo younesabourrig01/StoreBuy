@@ -4,8 +4,8 @@ const generateToken = require("../tools/generateToken");
 
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
-
+    const { name, email, password, phone_number, address, region } = req.body;
+    const image = req.file ? req.file.filename : null;
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email already exists" });
@@ -15,6 +15,10 @@ exports.register = async (req, res, next) => {
       name,
       email,
       password: hashedPassword,
+      phone_number,
+      address,
+      region,
+      image,
     });
 
     res.status(201).json({
@@ -49,6 +53,28 @@ exports.login = async (req, res, next) => {
         role: user.role,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+eexports.deleteUser = async (req, res, next) => {
+  try {
+    const user = req.user;
+    const { password } = req.body;
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    await user.deleteOne();
+
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     next(error);
   }
