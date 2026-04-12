@@ -1,15 +1,15 @@
-require("dotenv").config();
+require("dotenv");
 const app = require("./app");
 const connectDB = require("./config/db");
 
 const PORT = process.env.PORT;
 
-const startServeer = async () => {
+const startServer = async () => {
   await connectDB;
 
   app.listen(PORT, () => {
-    console.log(`Auth Server running on port ${PORT}`);
+    console.log(`Products Server running on port ${PORT}`);
   });
 };
 
-startServeer();
+startServer();

@@ -4,7 +4,8 @@ const auth = require("../middlewares/auth.middleware");
 
 module.exports = (app) => {
   app.use(
-    "/api/auth",
+    "/api/user",
+    auth,
     createProxyMiddleware({
       target: AUTH_SERVICE,
       changeOrigin: true,
