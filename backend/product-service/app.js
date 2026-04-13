@@ -1,6 +1,9 @@
-const morgan = require("morgan");
 const express = require("express");
-const express = require("cors");
+const morgan = require("morgan");
+const cors = require("cors");
+
+const adminRoutes = require("./routes/adminRoutes");
+const publicRoutes = require("./routes/publicRoutes");
 
 const app = express();
 
@@ -10,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 //routes
-app.use("/api/admin/products");
-app.use("/api/public/products");
+app.use("/api/admin/products", adminRoutes);
+app.use("/api/products", publicRoutes);
 
 module.exports = app;
