@@ -11,29 +11,34 @@ const ratingSchema = new mongoose.Schema({
   },
 });
 
-const productSchema = new mongoose.Schema({
-  title: {
-    type: String,
-    required: true,
+const productSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    category: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+    },
+    rating: {
+      type: ratingSchema,
+    },
   },
-  price: {
-    type: Number,
-    required: true,
+  {
+    timestamps: true,
   },
-  description: {
-    type: String,
-    required: true,
-  },
-  category: {
-    type: String,
-    required: true,
-  },
-  image: {
-    type: String,
-  },
-  rating: {
-    type: ratingSchema,
-  },
-});
+);
 
 module.exports = mongoose.model("Product", productSchema);
