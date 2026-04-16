@@ -50,18 +50,18 @@ exports.removeFav = async (req, res) => {
     }
 
     const deletedFav = await Favorite.findOneAndDelete({
-      user_id,
-      product_id,
+      user: user_id,
+      product: product_id,
     });
 
     if (!deletedFav) {
-      return sendNotFound(res, "Favorite not found", 404);
+      return sendNotFound(res, "Favorite", 404);
     }
 
     return sendSuccess(res, deletedFav, 200);
   } catch (error) {
     console.error("removeFav error:", error);
-    return sendError(res, "Internal server error", 500);
+    return sendError(res, error.message, 500);
   }
 };
 
@@ -74,8 +74,7 @@ exports.getFav = async (req, res) => {
       return sendError(res, "User ID is required", 400);
     }
 
-    const favList = await Favorite.find({ user_id });
-
+    const favList = await Favorite.find({ user: user_id });
     if (!favList || favList.length === 0) {
       return sendSuccess(res, [], 200);
     }
@@ -83,6 +82,6 @@ exports.getFav = async (req, res) => {
     return sendSuccess(res, favList, 200);
   } catch (error) {
     console.error("getFav error:", error);
-    return sendError(res, "Internal server error", 500);
+    return sendError(res, error.message, 500);
   }
 };
