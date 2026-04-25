@@ -2,7 +2,8 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 
-const orderRoutes = require("./routes/ordersRoutes");
+const ordersPublicRoutes = require("./routes/ordersPublicRoutes");
+const orderAdminRoutes = require("./routes/ordersAdminRoutes");
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 //routes
-app.use("/api/user/orders", orderRoutes);
+app.use("/api/user/orders", ordersPublicRoutes);
+app.use("/api/user/orders/admin", orderAdminRoutes);
 
 module.exports = app;
