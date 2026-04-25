@@ -7,6 +7,9 @@ module.exports = (app) => {
     createProxyMiddleware({
       target: PRODUCT_SERVICE,
       changeOrigin: true,
+      onProxyReq: (proxyReq, req, res) => {
+        proxyReq.setHeader("x-internal-secret", process.env.INTERNAL_SECRET);
+      },
     }),
   );
 };

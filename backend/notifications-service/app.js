@@ -4,7 +4,7 @@ const cors = require("cors");
 
 const internalAuth = require("../common/internalAuth");
 
-const favoriteRoutes = require("./routes/favoritRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -15,6 +15,6 @@ app.use(express.json());
 app.use(internalAuth);
 
 //routes
-app.use("/api/user/favorite", favoriteRoutes);
+app.use("/api/user/notifications", notificationRoutes);
 
 module.exports = app;
