@@ -5,6 +5,9 @@ const {
   sendNotFound,
 } = require("../tooles/responseHelper");
 
+const { checkItemsAvailability } = require("../clients/cart.client");
+const { getProductsByIds } = require("../clients/product.client");
+
 //total price
 const calculateTotalPrice = (items) => {
   return items.reduce((total, item) => {
@@ -31,15 +34,15 @@ exports.getOrderByUser = async (req, res) => {
 exports.createOrder = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
-    const { items } = req.body;
 
     if (!user_id) {
       return sendError(res, "user id is required", 400);
     }
 
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return sendError(res, "items must be a non-empty array", 400);
-    }
+    const items = await checkItemsAvailability(user_id);
+
+    const productIds = items.map((it) => it.productId);
+    const products = await getProductsByIds(productIds);
 
     for (const item of items) {
       if (!item.productId || !item.quantity || !item.price) {

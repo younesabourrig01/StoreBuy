@@ -19,6 +19,6 @@ app.use(internalAuth);
 //routes
 app.use("/api/admin/products", adminRoutes);
 app.use("/api/products", publicRoutes);
-app.use("/api/products", resendRoute);
+app.use("/api/products/:id", resendRoute);
 
 module.exports = app;

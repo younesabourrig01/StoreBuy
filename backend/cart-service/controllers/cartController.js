@@ -40,7 +40,7 @@ exports.getCart = async (req, res) => {
     const productIds = items.map((it) => it.productId);
     const products = await getProductsByIds(productIds);
 
-    return sendSuccess(res, items);
+    return sendSuccess(res, products);
   } catch (error) {
     return sendError(res, error.message);
   }
@@ -68,6 +68,7 @@ exports.removeItem = async (req, res) => {
     return sendError(res, error.message, 500);
   }
 };
+//clear cart
 exports.clearCart = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
@@ -94,6 +95,7 @@ exports.clearCart = async (req, res) => {
     return sendError(res, error.message, 500);
   }
 };
+// update a produxt quantity
 exports.updateItemQuantity = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
