@@ -1,3 +1,4 @@
+require("dotenv").config();
 module.exports = (req, res, next) => {
   const secret = req.headers["x-internal-secret"];
 

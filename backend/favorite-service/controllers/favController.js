@@ -1,23 +1,29 @@
 const Favorite = require("../model/favorite");
+const axios = require("axios");
 const {
   sendSuccess,
   sendError,
   sendNotFound,
 } = require("../tools/responseHelper");
 
+const { checkProductAvailability } = require("../services/productService");
+const { getProductsByIds } = require("../clients/product.client");
+
 //add a product to fav list
 exports.addToFav = async (req, res) => {
   try {
-    const user_id = req.headers["user"];
+    const user_id = req.headers["x-user-id"];
     const { product_id } = req.body;
 
     if (!product_id) {
       return sendError(res, "product_id is required", 400);
     }
 
+    const product = await checkProductAvailability(product_id);
+
     const existingFav = await Favorite.findOne({
       userId: user_id,
-      productId: product_id,
+      productId: product._id,
     });
 
     if (existingFav) {
@@ -26,7 +32,7 @@ exports.addToFav = async (req, res) => {
 
     const fav = await Favorite.create({
       userId: user_id,
-      productId: product_id,
+      productId: product._id,
     });
 
     return sendSuccess(res, fav, 201);
@@ -38,7 +44,7 @@ exports.addToFav = async (req, res) => {
 //remove a product from fav list
 exports.removeFav = async (req, res) => {
   try {
-    const user_id = req.headers["user"];
+    const user_id = req.headers["x-user-id"];
     const { product_id } = req.body;
 
     if (!user_id) {
@@ -49,9 +55,11 @@ exports.removeFav = async (req, res) => {
       return sendError(res, "Product ID is required", 400);
     }
 
+    const product = await checkProductAvailability(product_id);
+
     const deletedFav = await Favorite.findOneAndDelete({
       userId: user_id,
-      productId: product_id,
+      productId: product._id,
     });
 
     if (!deletedFav) {
@@ -65,10 +73,10 @@ exports.removeFav = async (req, res) => {
   }
 };
 
-//fet fav list
+//get fav list
 exports.getFav = async (req, res) => {
   try {
-    const user_id = req.headers["user"];
+    const user_id = req.headers["x-user-id"];
 
     if (!user_id) {
       return sendError(res, "User ID is required", 400);
@@ -79,7 +87,11 @@ exports.getFav = async (req, res) => {
       return sendSuccess(res, [], 200);
     }
 
-    return sendSuccess(res, favList, 200);
+    const productIds = favList.map((f) => f.productId);
+
+    const products = await getProductsByIds(productIds);
+
+    return sendSuccess(res, products.data, 200);
   } catch (error) {
     console.error("getFav error:", error);
     return sendError(res, error.message, 500);

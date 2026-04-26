@@ -5,6 +5,10 @@ const {
   sendNotFound,
 } = require("../tools/responseHelper");
 
+const { checkProductAvailability } = require("../service/productService");
+const { getProductsByIds } = require("../clients/product.client");
+
+//add an item to cart
 exports.addItem = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
@@ -13,8 +17,10 @@ exports.addItem = async (req, res) => {
     if (!user_id) return sendError(res, "user id required", 400);
     if (!product_id) return sendError(res, "product id required", 400);
 
+    const product = await checkProductAvailability(product_id, quantity);
+
     const item = await Cart.findOneAndUpdate(
-      { userId: user_id, productId: product_id },
+      { userId: user_id, productId: product._id },
       { $inc: { quantity: quantity } },
       { new: true, upsert: true },
     );
@@ -24,17 +30,22 @@ exports.addItem = async (req, res) => {
     return sendError(res, error.message, 500);
   }
 };
+//get cart items
 exports.getCart = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
 
     const items = await Cart.find({ userId: user_id });
 
+    const productIds = items.map((it) => it.productId);
+    const products = await getProductsByIds(productIds);
+
     return sendSuccess(res, items);
   } catch (error) {
     return sendError(res, error.message);
   }
 };
+// remove item from cart
 exports.removeItem = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
@@ -43,9 +54,11 @@ exports.removeItem = async (req, res) => {
     if (!user_id) return sendError(res, "user id required", 400);
     if (!product_id) return sendError(res, "product id required", 400);
 
+    const product = await checkProductAvailability(product_id);
+
     const item = await Cart.findOneAndDelete({
       userId: user_id,
-      productId: product_id,
+      productId: product._id,
     });
 
     if (!item) return sendNotFound(res, "product in cart", 404);
