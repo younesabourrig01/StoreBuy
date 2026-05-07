@@ -1,11 +1,11 @@
 const { getProductById } = require("../clients/product.client");
 
-exports.checkProductAvailability = async (productId) => {
-  const product = await getProductById(productId);
+exports.checkProductAvailability = async (product_id) => {
+  const product = await getProductById(product_id);
 
   if (!product) {
     throw new Error("Product not found");
   }
 
-  return product;
+  return product.data;
 };

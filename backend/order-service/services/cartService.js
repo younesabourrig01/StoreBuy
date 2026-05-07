@@ -1,4 +1,4 @@
-const { getItems } = require("../clients/cart.client");
+const { getItems, clearCart } = require("../clients/cart.client");
 
 exports.checkItemsAvailability = async (userId) => {
   const cart = await getItems(userId);
@@ -7,9 +7,15 @@ exports.checkItemsAvailability = async (userId) => {
     throw new Error("cart not found Or empty");
   }
 
-  if (!cart || !Array.isArray(cart) || cart.length === 0) {
+  const cartItems = cart.data;
+
+  if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
     throw new Error("cart empty");
   }
 
-  return cart;
+  return cartItems;
+};
+
+exports.clearCart = async (userId) => {
+  return await clearCart(userId);
 };

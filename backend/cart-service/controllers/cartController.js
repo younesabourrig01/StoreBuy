@@ -34,13 +34,8 @@ exports.addItem = async (req, res) => {
 exports.getCart = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
-
-    const items = await Cart.find({ userId: user_id });
-
-    const productIds = items.map((it) => it.productId);
-    const products = await getProductsByIds(productIds);
-
-    return sendSuccess(res, products);
+    const items = await Cart.find({ userId: user_id }); // Return raw cart items
+    return sendSuccess(res, items);
   } catch (error) {
     return sendError(res, error.message);
   }
@@ -49,7 +44,7 @@ exports.getCart = async (req, res) => {
 exports.removeItem = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
-    const product_id = req.params.id;
+    const product_id = req.params.product_id;
 
     if (!user_id) return sendError(res, "user id required", 400);
     if (!product_id) return sendError(res, "product id required", 400);
@@ -99,22 +94,22 @@ exports.clearCart = async (req, res) => {
 exports.updateItemQuantity = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
-    const cart_id = req.params.id;
+    const product_id = req.params.product_id;
     const { quantity } = req.body;
 
     if (!user_id) {
       return sendError(res, "user id required", 400);
     }
 
-    if (!cart_id) {
-      return sendError(res, "cart id required", 400);
+    if (!product_id) {
+      return sendError(res, "product id required", 400);
     }
 
     if (typeof quantity !== "number" || quantity < 0) {
       return sendError(res, "invalid quantity", 400);
     }
 
-    const item = await Cart.findById(cart_id);
+    const item = await Cart.findOne({ userId: user_id, productId: product_id });
 
     if (!item) {
       return sendNotFound(res, "Item not found in cart", 404);

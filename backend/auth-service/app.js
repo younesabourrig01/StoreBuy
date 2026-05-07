@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const cors = require("cors");
 
 const internalAuth = require("../common/internalAuth");
+const userMiddleware = require("./middlewares/userMiddleware");
 
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -18,6 +19,6 @@ app.use(internalAuth);
 
 //routes
 app.use("/api/auth", authRoutes);
-app.use("/api/user", userRoutes);
+app.use("/api/user", userMiddleware, userRoutes);
 
 module.exports = app;

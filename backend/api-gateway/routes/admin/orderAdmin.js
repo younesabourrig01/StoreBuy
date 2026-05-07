@@ -5,14 +5,14 @@ const role = require("../../middlewares/role.middleware");
 
 module.exports = (app) => {
   app.use(
-    "/api/user/orders/admin",
+    "/api/admin/orders",
     auth,
     role("admin"),
     createProxyMiddleware({
       target: ORDER_SERVICE,
       changeOrigin: true,
       pathRewrite: {
-        "^/": "/api/user/orders/admin/",
+        "^/": "/api/admin/orders/",
       },
       onProxyReq: (proxyReq, req, res) => {
         proxyReq.setHeader("x-internal-secret", process.env.INTERNAL_SECRET);

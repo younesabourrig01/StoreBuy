@@ -45,7 +45,7 @@ exports.addToFav = async (req, res) => {
 exports.removeFav = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
-    const { product_id } = req.body;
+    const { product_id } = req.params;
 
     if (!user_id) {
       return sendError(res, "User ID is required", 400);

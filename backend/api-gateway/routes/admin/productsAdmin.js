@@ -12,7 +12,7 @@ module.exports = (app) => {
       target: PRODUCT_SERVICE,
       changeOrigin: true,
       pathRewrite: {
-        "^/": "/api/admin/products/",
+        "^/": "/api/admin/products",
       },
       onProxyReq: (proxyReq, req, res) => {
         proxyReq.setHeader("x-internal-secret", process.env.INTERNAL_SECRET);

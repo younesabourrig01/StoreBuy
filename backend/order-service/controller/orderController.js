@@ -5,7 +5,7 @@ const {
   sendNotFound,
 } = require("../tooles/responseHelper");
 
-const { checkItemsAvailability } = require("../clients/cart.client");
+const { checkItemsAvailability, clearCart } = require("../services/cartService");
 const { getProductsByIds } = require("../clients/product.client");
 
 //total price
@@ -39,29 +39,45 @@ exports.createOrder = async (req, res) => {
       return sendError(res, "user id is required", 400);
     }
 
+    // 1. Get items from cart
     const items = await checkItemsAvailability(user_id);
 
+    // 2. Get current product details (especially prices)
     const productIds = items.map((it) => it.productId);
-    const products = await getProductsByIds(productIds);
+    const productsResponse = await getProductsByIds(productIds);
+    const productsList = productsResponse.data;
 
-    for (const item of items) {
-      if (!item.productId || !item.quantity || !item.price) {
-        return sendError(res, "invalid item structure", 400);
+    // 3. Map items to include current prices and names
+    const enrichedItems = items.map((cartItem) => {
+      const productDetail = productsList.find(
+        (p) => p._id.toString() === cartItem.productId.toString(),
+      );
+
+      if (!productDetail) {
+        throw new Error(`Product ${cartItem.productId} no longer exists`);
       }
 
-      if (item.quantity <= 0 || item.price <= 0) {
-        return sendError(res, "invalid quantity or price", 400);
-      }
-    }
+      return {
+        productId: cartItem.productId,
+        name: productDetail.name,
+        quantity: cartItem.quantity,
+        price: productDetail.price,
+      };
+    });
 
-    const totalPrice = calculateTotalPrice(items);
+    // 4. Calculate total price using current product prices
+    const totalPrice = calculateTotalPrice(enrichedItems);
 
+    // 5. Create the order
     const order = await Order.create({
       userId: user_id,
-      items,
+      items: enrichedItems,
       status: "CONFIRMED",
       totalPrice,
     });
+
+    // 6. Clear user cart after successful order
+    await clearCart(user_id);
 
     return sendSuccess(res, order, 201);
   } catch (error) {

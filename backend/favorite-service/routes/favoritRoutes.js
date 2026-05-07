@@ -4,6 +4,6 @@ const router = express.Router();
 
 router.post("/", addToFav);
 router.get("/", getFav);
-router.delete("/:id", removeFav);
+router.delete("/:product_id", removeFav);
 
 module.exports = router;

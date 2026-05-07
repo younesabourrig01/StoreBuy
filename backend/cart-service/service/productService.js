@@ -7,9 +7,11 @@ exports.checkProductAvailability = async (productId, quantity) => {
     throw new Error("Product not found");
   }
 
-  if (product.quantity < quantity) {
+  const productData = product.data;
+
+  if (productData.quantity < quantity) {
     throw new Error("Not enough stock");
   }
 
-  return product;
+  return productData;
 };

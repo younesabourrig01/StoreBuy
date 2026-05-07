@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const { sendResults } = require("../controller/sendResultsController");
+const { sendResults } = require("../controllers/sendResultsController");
 
 router.get("/", sendResults);
 

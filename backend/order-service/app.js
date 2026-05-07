@@ -17,6 +17,6 @@ app.use(internalAuth);
 
 //routes
 app.use("/api/user/orders", ordersPublicRoutes);
-app.use("/api/user/orders/admin", orderAdminRoutes);
+app.use("/api/admin/orders", orderAdminRoutes);
 
 module.exports = app;

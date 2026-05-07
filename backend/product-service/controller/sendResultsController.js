@@ -1,3 +1,4 @@
+const { sendSuccess, sendError } = require("../tools/responseHelper");
 const Product = require("../model/Product");
 
 exports.sendResults = async (req, res) => {
@@ -5,15 +6,15 @@ exports.sendResults = async (req, res) => {
     const { ids } = req.body;
 
     if (!ids || !Array.isArray(ids)) {
-      return res.status(400).json({ message: "Invalid IDs provided" });
+      return sendError(res, "Invalid IDs provided", 400);
     }
 
     const products = await Product.find({
       _id: { $in: ids },
     });
 
-    return res.status(200).json(products);
+    return sendSuccess(res, products);
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return sendError(res, error.message);
   }
 };

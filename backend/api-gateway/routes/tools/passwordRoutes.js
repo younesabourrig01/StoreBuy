@@ -8,10 +8,12 @@ module.exports = (app) => {
       target: PASSWORD_SERVICE,
       changeOrigin: true,
       pathRewrite: {
-        "^/": "/api/tools/password/",
+        "^/": "/api/tools/password",
       },
-      onProxyReq: (proxyReq, req, res) => {
-        proxyReq.setHeader("x-internal-secret", process.env.INTERNAL_SECRET);
+      on: {
+        proxyReq: (proxyReq, req, res) => {
+          proxyReq.setHeader("x-internal-secret", process.env.INTERNAL_SECRET);
+        },
       },
     }),
   );
