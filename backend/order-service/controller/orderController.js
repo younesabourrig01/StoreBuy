@@ -4,8 +4,12 @@ const {
   sendError,
   sendNotFound,
 } = require("../tooles/responseHelper");
+const { getChannel } = require("../services/rabbitmq");
 
-const { checkItemsAvailability, clearCart } = require("../services/cartService");
+const {
+  checkItemsAvailability,
+  clearCart,
+} = require("../services/cartService");
 const { getProductsByIds } = require("../clients/product.client");
 
 //total price
@@ -75,7 +79,20 @@ exports.createOrder = async (req, res) => {
       status: "CONFIRMED",
       totalPrice,
     });
-
+    //----------------------rabbit message--------------------
+    const channel = getChannel();
+    await channel.assertQueue("order_created");
+    channel.sendToQueue(
+      "order_created",
+      Buffer.from(
+        JSON.stringify({
+          orderId: order._id,
+          userId: order.userId,
+          totalPrice: order.totalPrice,
+        }),
+      ),
+    );
+    //-------------------------------------------------------
     // 6. Clear user cart after successful order
     await clearCart(user_id);
 

@@ -3,13 +3,15 @@
     "concurrently": "^9.2.1"
   },
   "scripts": {
-    "dev": "concurrently \"npm run auth\" \"npm run cart\" \"npm run favorite\" \"npm run order\" \"npm run pwGenerator\" \"npm run product\" \" npm run gateway \"",
+    "dev": "concurrently \"npm run auth\" \"npm run cart\" \"npm run favorite\" \"npm run order\" \"npm run pwGenerator\" \"npm run product\" \"npm run notification\" \"npm run gateway\"",
     "gateway": "cd backend/api-gateway && node server.js",
     "auth": "cd backend/auth-service && node server.js",
     "cart": "cd backend/cart-service && node server.js",
     "favorite": "cd backend/favorite-service && node server.js",
     "order": "cd backend/order-service && node server.js",
+    "notification": "cd backend/notifications-service && node server.js",
     "pwGenerator": "cd backend/passwordGenerator-service && go run main.go",
     "product": "cd backend/product-service && node server.js"
+
   }
 }

@@ -1,8 +1,11 @@
 require("dotenv").config();
 const app = require("./app");
 const { connectDB } = require("./config/db");
+const { connectRabbitMQ } = require("./services/rabbitmq");
 
 const PORT = process.env.PORT;
+
+connectRabbitMQ();
 
 const startServer = async () => {
   await connectDB();
