@@ -150,3 +150,11 @@ exports.userProfile = async (req, res) => {
     return sendError(res, error.message);
   }
 };
+
+exports.logout = async (req, res) => {
+  try {
+    return sendSuccess(res, { message: "Logged out successfully" });
+  } catch (error) {
+    return sendError(res, error.message);
+  }
+};
