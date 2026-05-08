@@ -28,7 +28,8 @@ const userSlice = createSlice({
       phone_number: '0612345678',
       adress: '123 Street Name',
       region: 'Casablanca',
-      image: 'https://via.placeholder.com/150'
+      image: 'https://via.placeholder.com/150',
+      role: 'admin'
     },
     isAuthenticated: true, // Mocking logged in state
     status: 'idle',

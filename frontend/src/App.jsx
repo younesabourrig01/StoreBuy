@@ -10,6 +10,7 @@ import CartPage from './Pages/CartPage';
 import FavoritesPage from './Pages/FavoritesPage';
 import ProfilePage from './Pages/ProfilePage';
 import NotificationPage from './Pages/NotificationPage';
+import AdminDashboard from './Pages/AdminDashboard';
 import './App.css';
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
           <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
         </Routes>

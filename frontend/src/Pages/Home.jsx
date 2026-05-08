@@ -245,7 +245,7 @@ const Home = () => {
             to { opacity: 1; transform: translateX(0); }
           }
 
-          @media (max-width: 900px) {
+          @media (max-width: 768px) {
             .hero-container {
               flex-direction: column-reverse !important;
               text-align: center !important;

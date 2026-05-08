@@ -15,12 +15,24 @@ const ProfilePage = () => {
   const [passForm, setPassForm] = useState({ current: '', new: '', confirm: '' });
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePass, setDeletePass] = useState('');
+  const [profileFile, setProfileFile] = useState(null);
 
   useEffect(() => {
     if (orderStatus === 'idle') {
       dispatch(fetchOrders(currentUser.id));
     }
   }, [orderStatus, dispatch, currentUser.id]);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('File size must be less than 2MB');
+        return;
+      }
+      setProfileFile(file);
+    }
+  };
 
   const handleInfoChange = (e) => {
     setInfoForm({ ...infoForm, [e.target.name]: e.target.value });
@@ -32,8 +44,13 @@ const ProfilePage = () => {
 
   const onUpdateInfo = (e) => {
     e.preventDefault();
-    dispatch(updateUserInfo(infoForm));
+    const updatedData = { ...infoForm };
+    if (profileFile) {
+      updatedData.image = URL.createObjectURL(profileFile);
+    }
+    dispatch(updateUserInfo(updatedData));
     toast.success('Profile updated successfully!');
+    setProfileFile(null);
   };
 
   const onUpdatePass = (e) => {
@@ -62,12 +79,10 @@ const ProfilePage = () => {
     <div style={{
       maxWidth: '1200px',
       margin: '0 auto',
-      padding: '4rem 2rem',
+      padding: '4rem 1rem',
       backgroundColor: 'var(--white)',
       minHeight: '100vh'
     }}>
-      {/* ... (Header and Forms sections remain same) */}
-      {/* (Adding the sections back correctly below) */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -76,12 +91,14 @@ const ProfilePage = () => {
         padding: '2rem',
         backgroundColor: 'var(--primary-green)',
         borderRadius: '24px',
-        border: '1px solid rgba(46, 125, 50, 0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+        border: '1px solid rgba(46, 125, 50, 0.1)',
+        flexWrap: 'wrap',
+        gap: '2rem'
+      }} className="profile-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }} className="profile-info">
           <div style={{
-            width: '120px',
-            height: '120px',
+            width: '100px',
+            height: '100px',
             borderRadius: '50%',
             backgroundColor: 'white',
             border: '4px solid var(--accent-green)',
@@ -91,21 +108,21 @@ const ProfilePage = () => {
             <img src={currentUser.image} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
           <div>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: '900', color: 'var(--dark-green)' }}>{currentUser.name}</h1>
-            <p style={{ color: 'var(--text-light)', fontSize: '1.1rem' }}>{currentUser.email}</p>
+            <h1 style={{ fontSize: '2rem', fontWeight: '900', color: 'var(--dark-green)' }}>{currentUser.name}</h1>
+            <p style={{ color: 'var(--text-light)', fontSize: '1rem' }}>{currentUser.email}</p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', width: '100%', maxWidth: 'fit-content' }} className="profile-actions">
           <button onClick={handleLogout} style={secondaryBtnStyle}>Logout</button>
           <button onClick={() => setShowDeleteModal(true)} style={dangerBtnStyle}>Delete Account</button>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '4rem', marginBottom: '6rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '4rem', marginBottom: '6rem' }}>
         {/* General Info Form */}
         <section>
           <h2 style={sectionTitleStyle}>General Information</h2>
-          <form onSubmit={onUpdateInfo} style={formGridStyle}>
+          <form onSubmit={onUpdateInfo} style={formGridStyle} className="form-grid">
             <div style={inputGroupStyle}>
               <label style={labelStyle}>Full Name</label>
               <input type="text" name="name" value={infoForm.name} onChange={handleInfoChange} style={inputStyle} />
@@ -122,9 +139,36 @@ const ProfilePage = () => {
               <label style={labelStyle}>Region</label>
               <input type="text" name="region" value={infoForm.region} onChange={handleInfoChange} style={inputStyle} />
             </div>
-            <div style={{ ...inputGroupStyle, gridColumn: 'span 2' }}>
+            <div style={{ ...inputGroupStyle, gridColumn: 'span 1' }} className="full-width">
               <label style={labelStyle}>Home Address</label>
               <input type="text" name="adress" value={infoForm.adress} onChange={handleInfoChange} style={inputStyle} />
+            </div>
+            <div style={{ ...inputGroupStyle, gridColumn: 'span 1' }} className="full-width">
+              <label style={labelStyle}>Profile Image (Max 2MB)</label>
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type="file" 
+                  id="user-profile-upload"
+                  accept="image/*" 
+                  onChange={handleFileChange} 
+                  style={{ display: 'none' }} 
+                />
+                <label 
+                  htmlFor="user-profile-upload"
+                  style={fileInputAreaStyle}
+                >
+                  <div style={fileIconWrapperStyle}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--dark-green)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                  </div>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                    {profileFile ? profileFile.name : 'Choose image (Max 2MB)'}
+                  </span>
+                </label>
+              </div>
             </div>
             <button type="submit" style={primaryBtnStyle}>Save Changes</button>
           </form>
@@ -175,7 +219,9 @@ const ProfilePage = () => {
                 border: '1px solid rgba(46, 125, 50, 0.05)',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '1rem'
               }}>
                 <div>
                   <h4 style={{ fontSize: '1.1rem', color: 'var(--dark-green)', marginBottom: '0.4rem' }}>Order #{order.id}</h4>
@@ -200,8 +246,6 @@ const ProfilePage = () => {
         </div>
       </section>
 
-      {/* ... (Modal remains same) */}
-
       {/* Delete Modal */}
       {showDeleteModal && (
         <div style={modalOverlayStyle}>
@@ -224,6 +268,29 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+      <style>{`
+        @media (max-width: 768px) {
+          .profile-header {
+            flex-direction: column !important;
+            text-align: center !important;
+            padding: 1.5rem !important;
+          }
+          .profile-info {
+            flex-direction: column !important;
+            gap: 1rem !important;
+          }
+          .profile-actions {
+            max-width: 100% !important;
+            justify-content: center !important;
+          }
+          .form-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .full-width {
+            grid-column: span 1 !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };
@@ -272,6 +339,27 @@ const dangerBtnStyle = {
   fontWeight: '700',
   border: '1px solid #feb2b2',
   cursor: 'pointer'
+};
+const fileInputAreaStyle = { 
+  display: 'flex', 
+  alignItems: 'center', 
+  gap: '1rem', 
+  padding: '0.8rem 1rem', 
+  borderRadius: '12px', 
+  border: '2.5px dashed rgba(46, 125, 50, 0.15)', 
+  backgroundColor: '#f9fdfa', 
+  cursor: 'pointer', 
+  fontSize: '0.9rem', 
+  color: '#718096', 
+  transition: 'all 0.3s ease' 
+};
+const fileIconWrapperStyle = { 
+  backgroundColor: 'var(--primary-green)', 
+  padding: '0.4rem', 
+  borderRadius: '8px', 
+  display: 'flex', 
+  alignItems: 'center', 
+  justifyContent: 'center' 
 };
 const modalOverlayStyle = {
   position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,

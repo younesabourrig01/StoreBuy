@@ -164,38 +164,38 @@ const Register = () => {
             </div>
           )}
           
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }}>
+          <form onSubmit={handleSubmit} style={formResponsiveGrid} className="register-form">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }} className="full-width">
               <label style={labelStyle}>Full Name</label>
               <input type="text" name="name" placeholder="John Doe" required onChange={handleChange} style={inputStyle} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }} className="full-width">
               <label style={labelStyle}>Email</label>
               <input type="email" name="email" placeholder="john@example.com" required onChange={handleChange} style={inputStyle} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }} className="full-width">
               <label style={labelStyle}>Password</label>
               <input type="password" name="password" value={formData.password} required onChange={handleChange} onFocus={handlePasswordFocus} style={inputStyle} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }} className="full-width">
               <label style={labelStyle}>Phone</label>
               <input type="tel" name="phone_number" placeholder="06XXXXXXXX" required onChange={handleChange} style={inputStyle} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }} className="full-width">
               <label style={labelStyle}>Region</label>
               <input type="text" name="region" placeholder="Region" required onChange={handleChange} style={inputStyle} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }} className="full-width">
               <label style={labelStyle}>Address</label>
               <input type="text" name="adress" placeholder="Street Address" required onChange={handleChange} style={inputStyle} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }} className="full-width">
               <label style={labelStyle}>Profile Image</label>
               <div style={{ position: 'relative' }}>
                 <input 
@@ -281,10 +281,22 @@ const Register = () => {
             .auth-container {
               flex-direction: column !important;
               padding: 1rem 0;
+              gap: 1.5rem !important;
             }
             .auth-container > div {
               min-width: 100% !important;
               max-width: 100% !important;
+            }
+            .hero-brand {
+              width: 280px !important;
+            }
+          }
+          @media (max-width: 600px) {
+            .register-form {
+              grid-template-columns: 1fr !important;
+            }
+            .full-width {
+              grid-column: span 1 !important;
             }
           }
         `}
@@ -294,6 +306,7 @@ const Register = () => {
 };
 
 const labelStyle = { fontSize: '0.8rem', fontWeight: '700', color: 'var(--text-dark)' };
+const formResponsiveGrid = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' };
 
 const inputStyle = {
   padding: '0.65rem 0.9rem',

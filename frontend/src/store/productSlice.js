@@ -9,6 +9,22 @@ export const fetchProducts = createAsyncThunk(
   }
 );
 
+export const addProduct = createAsyncThunk(
+  'products/addProduct',
+  async (productData) => {
+    // Simulated backend call
+    return { ...productData, id: Math.floor(Math.random() * 1000) };
+  }
+);
+
+export const updateProduct = createAsyncThunk(
+  'products/updateProduct',
+  async (productData) => {
+    // Simulated backend call
+    return productData;
+  }
+);
+
 const productSlice = createSlice({
   name: 'products',
   initialState: {
@@ -29,6 +45,15 @@ const productSlice = createSlice({
       .addCase(fetchProducts.rejected, (state, action) => {
         state.status = 'failed';
         state.error = action.error.message;
+      })
+      .addCase(addProduct.fulfilled, (state, action) => {
+        state.items.unshift(action.payload);
+      })
+      .addCase(updateProduct.fulfilled, (state, action) => {
+        const index = state.items.findIndex(p => p.id === action.payload.id);
+        if (index !== -1) {
+          state.items[index] = action.payload;
+        }
       });
   },
 });
