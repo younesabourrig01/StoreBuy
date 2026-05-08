@@ -1,26 +1,37 @@
-import Header from "./components/layout/Header";
-import Footer from "./components/layout/Footer";
-import ProductsList from "./components/Pages/ProductsList";
-import { Route, Routes } from "react-router-dom";
-import Home from "./components/Pages/Home";
-import { ProductDetail } from "./components/Pages/ProductDetail";
-import NotFound from "./components/Pages/NotFound";
-import Panier from "./components/Pages/Panier";
-import Contact from "./components/Pages/Contact";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import Layout from './layout/Layout';
+import Home from './Pages/Home';
+import ProductsPage from './Pages/ProductsPage';
+import Register from './Pages/Register';
+import Login from './Pages/Login';
+import ProductDetails from './Pages/ProductDetails';
+import CartPage from './Pages/CartPage';
+import FavoritesPage from './Pages/FavoritesPage';
+import ProfilePage from './Pages/ProfilePage';
+import NotificationPage from './Pages/NotificationPage';
+import AdminDashboard from './Pages/AdminDashboard';
+import './App.css';
+
 function App() {
   return (
-    <div>
-      <Header />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/produits" element={<ProductsList />} />
-        <Route path="/produit/:id" element={<ProductDetail />} />
-        <Route path="/panier" element={<Panier />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Footer />
-    </div>
+    <Router>
+      <Toaster position="top-center" reverseOrder={false} />
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<ProductsPage />} />
+          <Route path="/product/:id" element={<ProductDetails />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/notifications" element={<NotificationPage />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </Layout>
+    </Router>
   );
 }
 

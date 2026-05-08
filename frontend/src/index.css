@@ -1,21 +1,88 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-/* .app.light {
-  background-color: #ffffff;
-  color: #000;
+:root {
+  --primary-green: #e8f5e9;
+  --dark-green: #2e7d32;
+  --accent-green: #4caf50;
+  --white: #ffffff;
+  --text-dark: #1b5e20;
+  --text-light: #4e7d50;
+  --font-main: 'Outfit', system-ui, -apple-system, sans-serif;
 }
 
-.app.dark {
-  background-color: #121212;
-  color: #fff;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-.navbar.light {
-  background: #eee;
+body {
+  font-family: var(--font-main);
+  background-color: var(--white);
+  color: var(--text-dark);
+  line-height: 1.6;
 }
 
-.navbar.dark {
-  background: #333;
-} */
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex: 1;
+}
+
+h1, h2, h3 {
+  color: var(--dark-green);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+/* Responsive Utilities */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.grid-responsive {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .show-mobile {
+    display: block !important;
+  }
+
+  .show-mobile-flex {
+    display: flex !important;
+  }
+
+  .grid-2-col {
+    grid-template-columns: 1fr !important;
+  }
+
+  section {
+    padding: 2rem 1rem !important;
+  }
+}
+
+/* Hide show mobile initial state */
+.show-mobile, .show-mobile-flex {
+  display: none;
+}
