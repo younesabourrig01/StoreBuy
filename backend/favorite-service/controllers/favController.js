@@ -14,16 +14,19 @@ exports.addToFav = async (req, res) => {
   try {
     const user_id = req.headers["x-user-id"];
     const { product_id } = req.body;
+    console.log("FAVORITE ADD REQUEST:", { user_id, product_id });
 
     if (!product_id) {
       return sendError(res, "product_id is required", 400);
     }
 
     const product = await checkProductAvailability(product_id);
+    console.log("PRODUCT AVAILABILITY CHECK:", product ? "FOUND" : "NOT FOUND");
+
 
     const existingFav = await Favorite.findOne({
-      userId: user_id,
-      productId: product._id,
+      userId: String(user_id),
+      productId: String(product._id),
     });
 
     if (existingFav) {
@@ -31,9 +34,10 @@ exports.addToFav = async (req, res) => {
     }
 
     const fav = await Favorite.create({
-      userId: user_id,
-      productId: product._id,
+      userId: String(user_id),
+      productId: String(product._id),
     });
+
 
     return sendSuccess(res, fav, 201);
   } catch (error) {

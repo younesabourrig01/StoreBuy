@@ -30,7 +30,8 @@ require("./routes/authRoutes")(app);
 require("./routes/user/CartRoutes")(app);
 require("./routes/user/favoritePublic")(app);
 require("./routes/user/orderRoutes")(app);
-require("./routes/user/userRoutes")(app);
+require("./routes/user/notificationRoutes")(app); // MUST be before generic userRoutes
+require("./routes/user/userRoutes")(app);          // catch-all /api/user → auth service
 require("./routes/admin/productsAdmin")(app);
 require("./routes/public/productsPublic")(app);
 require("./routes/admin/orderAdmin")(app);

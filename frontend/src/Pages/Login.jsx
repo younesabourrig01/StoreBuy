@@ -1,24 +1,40 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../store/authSlice';
 import BrandHero from '../Components/BrandHero';
 import toast from 'react-hot-toast';
 
+
 const Login = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { status, error } = useSelector((state) => state.auth);
+
   const [credentials, setCredentials] = useState({
     email: '',
     password: ''
   });
 
+
   const handleChange = (e) => {
     setCredentials({ ...credentials, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Logging in with:', credentials);
-    toast.success('Login successful! (Simulated)');
-    navigate('/');
+    const resultAction = await dispatch(loginUser(credentials));
+    
+    if (loginUser.fulfilled.match(resultAction)) {
+      toast.success('Welcome back!');
+      if (resultAction.payload.user?.role === 'admin') {
+        navigate('/admin-dashboard');
+      } else {
+        navigate('/');
+      }
+    } else {
+      toast.error(resultAction.payload || 'Login failed');
+    }
   };
 
   return (
@@ -69,11 +85,28 @@ const Login = () => {
           <p style={{ 
             textAlign: 'center', 
             color: 'var(--text-light)', 
-            marginBottom: '2.5rem',
+            marginBottom: '1.5rem',
             fontSize: '1rem'
           }}>
             Please enter your details to sign in.
           </p>
+
+          {error && (
+            <div style={{
+              backgroundColor: '#fff5f5',
+              color: '#e53e3e',
+              padding: '0.8rem',
+              borderRadius: '8px',
+              marginBottom: '1.5rem',
+              fontSize: '0.9rem',
+              textAlign: 'center',
+              fontWeight: '600',
+              border: '1px solid #fed7d7'
+            }}>
+              {error}
+            </div>
+          )}
+
           
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
@@ -110,15 +143,18 @@ const Login = () => {
                 borderRadius: '12px',
                 fontWeight: '800',
                 border: 'none',
-                cursor: 'pointer',
+                cursor: status === 'loading' ? 'not-allowed' : 'pointer',
                 fontSize: '1.1rem',
                 marginTop: '1rem',
                 transition: 'all 0.3s ease',
-                boxShadow: '0 8px 16px rgba(46, 125, 50, 0.2)'
+                boxShadow: '0 8px 16px rgba(46, 125, 50, 0.2)',
+                opacity: status === 'loading' ? 0.7 : 1
               }}
+              disabled={status === 'loading'}
             >
-              Sign In
+              {status === 'loading' ? 'Signing In...' : 'Sign In'}
             </button>
+
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '2rem', fontSize: '0.95rem', color: 'var(--text-dark)' }}>

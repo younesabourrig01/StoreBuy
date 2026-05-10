@@ -1,28 +1,25 @@
 const { createProxyMiddleware } = require("http-proxy-middleware");
-const { CART_SERVICE } = require("../../config/services");
+const { NOTIFICATION_SERVICE } = require("../../config/services");
 const auth = require("../../middlewares/auth.middleware");
 
 module.exports = (app) => {
   app.use(
-    "/api/user/cart",
+    "/api/user/notifications",
     auth,
     (req, res, next) => {
       req.headers["x-internal-secret"] = process.env.INTERNAL_SECRET;
       const userId = req.user?.id || req.user?._id;
-      console.log("GATEWAY CART PROXY - User ID:", userId);
       if (userId) {
         req.headers["x-user-id"] = String(userId);
       }
       next();
-
     },
     createProxyMiddleware({
-      target: CART_SERVICE,
+      target: NOTIFICATION_SERVICE,
       changeOrigin: true,
       pathRewrite: {
-        "^/": "/api/user/cart/",
+        "^/": "/api/user/notifications/",
       },
     }),
-
   );
 };

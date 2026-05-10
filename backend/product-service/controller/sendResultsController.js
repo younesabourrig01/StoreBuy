@@ -4,8 +4,10 @@ const Product = require("../model/Product");
 exports.sendResults = async (req, res) => {
   try {
     const { ids } = req.body;
+    console.log("BULK PRODUCT FETCH REQUEST - IDs:", ids);
 
     if (!ids || !Array.isArray(ids)) {
+
       return sendError(res, "Invalid IDs provided", 400);
     }
 

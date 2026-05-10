@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateUserInfo, updatePassword, logout, deleteAccount } from '../store/userSlice';
-import { fetchProducts, addProduct, updateProduct } from '../store/productSlice';
+import { updateProfile, changePassword, logoutUser, deleteAccount } from '../store/authSlice';
+import { fetchProducts, addProduct, updateProduct, deleteProduct } from '../store/productSlice';
 import { fetchAllOrders } from '../store/orderSlice';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
@@ -13,9 +13,10 @@ const ListIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="non
 const LogoutIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>;
 const PlusIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
 const EditIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>;
+const DeleteIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
 
 const AdminDashboard = () => {
-  const { currentUser } = useSelector(state => state.user);
+  const { user: currentUser } = useSelector(state => state.auth);
   const { items: products, status: productStatus } = useSelector(state => state.products);
   const { allOrders: orders, adminStatus: orderStatus } = useSelector(state => state.orders);
   const dispatch = useDispatch();
@@ -26,7 +27,7 @@ const AdminDashboard = () => {
   const [editingProduct, setEditingProduct] = useState(null);
 
   // Forms states
-  const [infoForm, setInfoForm] = useState({ ...currentUser });
+  const [infoForm, setInfoForm] = useState(currentUser || {});
   const [passForm, setPassForm] = useState({ current: '', new: '', confirm: '' });
   const [productForm, setProductForm] = useState({
     title: '',
@@ -40,9 +41,21 @@ const AdminDashboard = () => {
   const [productFile, setProductFile] = useState(null);
 
   useEffect(() => {
-    if (productStatus === 'idle') dispatch(fetchProducts());
-    if (orderStatus === 'idle') dispatch(fetchAllOrders());
-  }, [productStatus, orderStatus, dispatch]);
+    if (!currentUser) {
+      navigate('/login');
+    } else if (currentUser.role !== 'admin') {
+      navigate('/profile');
+    }
+  }, [currentUser, navigate]);
+
+  useEffect(() => {
+    if (currentUser?.role === 'admin') {
+      if (productStatus === 'idle') dispatch(fetchProducts());
+      if (orderStatus === 'idle') dispatch(fetchAllOrders());
+    }
+  }, [productStatus, orderStatus, dispatch, currentUser]);
+
+  if (!currentUser) return null;
 
   const handleFileChange = (e, type) => {
     const file = e.target.files[0];
@@ -57,56 +70,90 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logoutUser());
     toast.success('Logged out');
     navigate('/login');
   };
 
-  const onUpdateInfo = (e) => {
+  const onUpdateInfo = async (e) => {
     e.preventDefault();
-    // In a real app, you'd upload the file first
-    const updatedData = { ...infoForm };
+    const data = new FormData();
+    Object.keys(infoForm).forEach(key => data.append(key, infoForm[key]));
     if (infoFile) {
-      updatedData.image = URL.createObjectURL(infoFile);
+      data.append('image', infoFile);
     }
-    dispatch(updateUserInfo(updatedData));
-    toast.success('Profile updated successfully!');
-    setInfoFile(null);
+    const resultAction = await dispatch(updateProfile(data));
+    if (updateProfile.fulfilled.match(resultAction)) {
+      toast.success('Profile updated successfully!');
+      setInfoFile(null);
+    } else {
+      toast.error('Failed to update profile');
+    }
   };
 
-  const onUpdatePass = (e) => {
+  const onUpdatePass = async (e) => {
     e.preventDefault();
     if (!passForm.current) return toast.error('Current password is required');
     if (passForm.new !== passForm.confirm) return toast.error('New passwords do not match');
-    dispatch(updatePassword(passForm));
-    toast.success('Password updated successfully!');
-    setPassForm({ current: '', new: '', confirm: '' });
+    const resultAction = await dispatch(changePassword({
+      currentPassword: passForm.current,
+      newPassword: passForm.new
+    }));
+    if (changePassword.fulfilled.match(resultAction)) {
+      toast.success('Password updated successfully!');
+      setPassForm({ current: '', new: '', confirm: '' });
+    } else {
+      toast.error(resultAction.payload || 'Failed to update password');
+    }
   };
 
-  const handleProductSubmit = (e) => {
+  const handleProductSubmit = async (e) => {
     e.preventDefault();
     const finalProduct = { ...productForm };
     if (productFile) {
-      finalProduct.image = URL.createObjectURL(productFile);
+      finalProduct.image = productFile;
     }
 
     if (editingProduct) {
-      dispatch(updateProduct({ ...finalProduct, id: editingProduct.id }));
-      toast.success('Product updated!');
+      const resultAction = await dispatch(updateProduct({ ...finalProduct, id: editingProduct._id || editingProduct.id }));
+      if (updateProduct.fulfilled.match(resultAction)) {
+        toast.success('Product updated!');
+        setShowProductModal(false);
+        setEditingProduct(null);
+        setProductFile(null);
+        setProductForm({ title: '', price: '', description: '', category: '', image: '', rating: { rate: 0, count: 0 } });
+      } else {
+        toast.error(resultAction.payload || 'Failed to update product');
+      }
     } else {
-      dispatch(addProduct(finalProduct));
-      toast.success('Product added!');
+      const resultAction = await dispatch(addProduct(finalProduct));
+      if (addProduct.fulfilled.match(resultAction)) {
+        toast.success('Product added!');
+        setShowProductModal(false);
+        setEditingProduct(null);
+        setProductFile(null);
+        setProductForm({ title: '', price: '', description: '', category: '', image: '', rating: { rate: 0, count: 0 } });
+      } else {
+        toast.error(resultAction.payload || 'Failed to add product');
+      }
     }
-    setShowProductModal(false);
-    setEditingProduct(null);
-    setProductFile(null);
-    setProductForm({ title: '', price: '', description: '', category: '', image: '', rating: { rate: 0, count: 0 } });
   };
 
   const openEditModal = (product) => {
     setEditingProduct(product);
     setProductForm(product);
     setShowProductModal(true);
+  };
+
+  const handleDeleteProduct = async (product) => {
+    if (window.confirm(`Are you sure you want to delete ${product.title}?`)) {
+      const resultAction = await dispatch(deleteProduct(product._id || product.id));
+      if (deleteProduct.fulfilled.match(resultAction)) {
+        toast.success('Product deleted');
+      } else {
+        toast.error(resultAction.payload || 'Failed to delete product');
+      }
+    }
   };
 
   return (
@@ -151,9 +198,9 @@ const AdminDashboard = () => {
             <h1 style={{ fontSize: '1.5rem', fontWeight: '800' }}>{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h1>
           </div>
           <div style={userBadge} className="hide-mobile">
-            <img src={currentUser.image} alt="Admin" style={avatarStyle} />
+            <img src={currentUser?.image?.startsWith('http') ? currentUser.image : `http://localhost:4000/api/auth/uploads/${encodeURIComponent((currentUser?.image || '').replace(/\\/g, '/'))}`} alt="Admin" style={avatarStyle} />
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{currentUser.name}</span>
+              <span style={{ fontWeight: '700', fontSize: '0.9rem' }}>{currentUser?.name}</span>
               <span style={{ fontSize: '0.75rem', color: 'var(--dark-green)', fontWeight: '600' }}>Admin</span>
             </div>
           </div>
@@ -268,10 +315,21 @@ const AdminDashboard = () => {
                   </thead>
                   <tbody>
                     {products.map(product => (
-                      <tr key={product.id}>
+                      <tr key={product._id || product.id}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <img src={product.image} style={tableImg} alt="" />
+                            <img 
+                              src={(() => {
+                                const img = product.image || '';
+                                if (!img) return '';
+                                if (img.startsWith('http')) return img;
+                                // stored as uploads/filename or just filename
+                                const filename = img.replace(/^uploads[\\/]/, '');
+                                return `http://localhost:4000/api/products/uploads/${filename}`;
+                              })()} 
+                              style={tableImg} 
+                              alt="" 
+                            />
                             <span style={{ fontWeight: '600', fontSize: '0.85rem', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {product.title}
                             </span>
@@ -281,9 +339,14 @@ const AdminDashboard = () => {
                         <td><span style={{ fontWeight: '700', fontSize: '0.85rem' }}>${product.price}</span></td>
                         <td className="hide-mobile"><span style={activeStatus}>In Stock</span></td>
                         <td>
-                          <button onClick={() => openEditModal(product)} style={editBtn}>
-                            <EditIcon />
-                          </button>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button onClick={() => openEditModal(product)} style={editBtn}>
+                              <EditIcon />
+                            </button>
+                            <button onClick={() => handleDeleteProduct(product)} style={deleteBtn}>
+                              <DeleteIcon />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -311,23 +374,25 @@ const AdminDashboard = () => {
                   </thead>
                   <tbody>
                     {orders.map(order => (
-                      <tr key={order.id}>
-                        <td style={{ fontWeight: '700', fontSize: '0.85rem' }}>#{order.id.slice(-3)}</td>
+                      <tr key={order._id}>
+                        <td style={{ fontWeight: '700', fontSize: '0.85rem' }}>#{(order._id || '').slice(-6)}</td>
                         <td>
                           <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontWeight: '600', fontSize: '0.85rem' }}>{order.userName}</span>
+                            <span style={{ fontWeight: '600', fontSize: '0.85rem' }}>{order.userId}</span>
                           </div>
                         </td>
-                        <td style={{ fontSize: '0.8rem' }} className="hide-mobile">{order.date}</td>
-                        <td><span style={{ fontWeight: '800', fontSize: '0.85rem' }}>${order.total.toFixed(2)}</span></td>
+                        <td style={{ fontSize: '0.8rem' }} className="hide-mobile">
+                          {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '—'}
+                        </td>
+                        <td><span style={{ fontWeight: '800', fontSize: '0.85rem' }}>${(order.totalPrice ?? 0).toFixed(2)}</span></td>
                         <td>
                           <span style={{
                             padding: '0.3rem 0.6rem',
                             borderRadius: '50px',
                             fontSize: '0.7rem',
                             fontWeight: '700',
-                            backgroundColor: order.status === 'Delivered' ? '#e6fffa' : '#fffaf0',
-                            color: order.status === 'Delivered' ? '#2c7a7b' : '#b7791f'
+                            backgroundColor: order.status === 'CONFIRMED' ? '#e6fffa' : order.status === 'CANCELLED' ? '#fff5f5' : '#fffaf0',
+                            color: order.status === 'CONFIRMED' ? '#2c7a7b' : order.status === 'CANCELLED' ? '#e53e3e' : '#b7791f'
                           }}>
                             {order.status}
                           </span>
@@ -508,6 +573,7 @@ const tableImg = { width: '40px', height: '40px', objectFit: 'contain', borderRa
 const categoryBadge = { padding: '0.3rem 0.6rem', backgroundColor: '#edf2f7', borderRadius: '6px', fontSize: '0.7rem', fontWeight: '700', color: '#4a5568' };
 const activeStatus = { fontSize: '0.7rem', fontWeight: '700', color: '#38a169' };
 const editBtn = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', backgroundColor: '#f0f9ff', color: '#3182ce', border: 'none', borderRadius: '8px', cursor: 'pointer' };
+const deleteBtn = { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', backgroundColor: '#fff5f5', color: '#e53e3e', border: 'none', borderRadius: '8px', cursor: 'pointer' };
 
 const modalOverlay = { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 };
 const modalContent = { backgroundColor: 'white', padding: '2.5rem', borderRadius: '28px', width: '90%', maxWidth: '600px' };

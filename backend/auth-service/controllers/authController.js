@@ -138,12 +138,15 @@ exports.userProfile = async (req, res) => {
     return sendSuccess(res, {
       message: "User data fetched successfully",
       user: {
+        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         image: user.image,
         region: user.region,
         adress: user.adress,
         phone_number: user.phone_number,
+        role: user.role,
       },
     });
   } catch (error) {

@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../store/authSlice';
 import PasswordPopup from '../Components/PasswordPopup';
 import BrandHero from '../Components/BrandHero';
 import toast from 'react-hot-toast';
 
+
 const Register = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { status, error: authError } = useSelector((state) => state.auth);
+
   const [showPopup, setShowPopup] = useState(false);
   const [generatedPassword, setGeneratedPassword] = useState('');
   const [hasShownPopup, setHasShownPopup] = useState(false);
   const [error, setError] = useState('');
   const [fileName, setFileName] = useState('');
+
   
   const [formData, setFormData] = useState({
     name: '',
@@ -47,14 +54,27 @@ const Register = () => {
     }
   };
 
-  const handlePasswordFocus = () => {
+  const handlePasswordFocus = async () => {
     if (!hasShownPopup && !formData.password) {
-      const mockPassword = 'SB-' + Math.random().toString(36).slice(-8).toUpperCase();
-      setGeneratedPassword(mockPassword);
-      setShowPopup(true);
-      setHasShownPopup(true);
+      try {
+        const response = await fetch('http://localhost:4000/api/tools/password');
+        const data = await response.json();
+        if (data.password) {
+          setGeneratedPassword(data.password);
+          setShowPopup(true);
+          setHasShownPopup(true);
+        }
+      } catch (error) {
+        console.error('Error generating password:', error);
+        // Fallback if service is down
+        const mockPassword = 'SB-' + Math.random().toString(36).slice(-8).toUpperCase();
+        setGeneratedPassword(mockPassword);
+        setShowPopup(true);
+        setHasShownPopup(true);
+      }
     }
   };
+
 
   const handleClosePopup = () => {
     setShowPopup(false);
@@ -64,10 +84,24 @@ const Register = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (error) return;
-    console.log('Registering user with data:', formData);
-    toast.success('Registration successful! (Simulated)');
-    navigate('/login');
+
+    const data = new FormData();
+    Object.keys(formData).forEach((key) => {
+      if (formData[key] !== null) {
+        data.append(key, formData[key]);
+      }
+    });
+
+    const resultAction = await dispatch(registerUser(data));
+    
+    if (registerUser.fulfilled.match(resultAction)) {
+      toast.success('Registration successful! Welcome to StoreBuy.');
+      navigate('/');
+    } else {
+      toast.error(resultAction.payload || 'Registration failed');
+    }
   };
+
 
   return (
     <div style={{
@@ -148,7 +182,7 @@ const Register = () => {
             Create Account
           </h2>
 
-          {error && (
+          {(error || authError) && (
             <div style={{
               backgroundColor: '#fff5f5',
               color: '#e53e3e',
@@ -160,9 +194,10 @@ const Register = () => {
               fontWeight: '600',
               border: '1px solid #fed7d7'
             }}>
-              {error}
+              {error || authError}
             </div>
           )}
+
           
           <form onSubmit={handleSubmit} style={formResponsiveGrid} className="register-form">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', gridColumn: 'span 2' }} className="full-width">
@@ -255,9 +290,15 @@ const Register = () => {
               </div>
             </div>
 
-            <button type="submit" className="auth-btn" style={buttonStyle}>
-              Create Account
+            <button 
+              type="submit" 
+              className="auth-btn" 
+              style={{...buttonStyle, opacity: status === 'loading' ? 0.7 : 1, cursor: status === 'loading' ? 'not-allowed' : 'pointer'}}
+              disabled={status === 'loading'}
+            >
+              {status === 'loading' ? 'Creating Account...' : 'Create Account'}
             </button>
+
           </form>
 
           <p style={{ textAlign: 'center', marginTop: '1.2rem', fontSize: '0.85rem' }}>

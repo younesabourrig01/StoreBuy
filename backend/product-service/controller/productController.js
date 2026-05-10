@@ -44,8 +44,13 @@ const getProductById = async (req, res) => {
 // POST new product
 const createProduct = async (req, res) => {
   try {
+    const body = { ...req.body };
+    // FormData sends nested objects as JSON strings
+    if (body.rating && typeof body.rating === 'string') {
+      try { body.rating = JSON.parse(body.rating); } catch (_) {}
+    }
     const product = new Product({
-      ...req.body,
+      ...body,
       image: req.file ? req.file.path : null,
     });
 
@@ -71,14 +76,23 @@ const updateProduct = async (req, res) => {
       return sendNotFound(res, "Produit");
     }
 
+    const body = { ...req.body };
+    // Remove immutable fields to prevent Mongoose errors
+    delete body._id;
+    delete body.id;
+
+    if (body.rating && typeof body.rating === 'string') {
+      try { body.rating = JSON.parse(body.rating); } catch (_) {}
+    }
+
     if (req.file) {
       if (product.image && fs.existsSync(product.image)) {
         fs.unlinkSync(product.image);
       }
-      req.body.image = req.file.path;
+      body.image = req.file.path;
     }
 
-    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+    const updatedProduct = await Product.findByIdAndUpdate(id, body, {
       new: true,
       runValidators: true,
     });

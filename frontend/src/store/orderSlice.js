@@ -1,28 +1,46 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../api/apiConfig';
+import toast from 'react-hot-toast';
+import { resetCartLocal } from './cartSlice'; 
 
 export const fetchOrders = createAsyncThunk(
   'orders/fetchOrders',
-  async (userId) => {
-    // const response = await fetch(`/api/orders/user/${userId}`);
-    // return await response.json();
-    return [
-      { id: 'ORD-123', userId: 'user1', date: '2026-05-01', total: 125.99, status: 'Delivered', items: 3 },
-      { id: 'ORD-456', userId: 'user1', date: '2026-05-06', total: 45.00, status: 'Processing', items: 1 }
-    ]; // Mock data
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/user/orders');
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch orders');
+    }
+  }
+);
+
+export const createOrder = createAsyncThunk(
+  'orders/createOrder',
+  async (_, { dispatch, rejectWithValue }) => {
+    try {
+      const response = await api.post('/user/orders');
+      if (response.data.status === 'success' || response.data.success) {
+        dispatch(resetCartLocal());
+        return response.data.data;
+      }
+      return rejectWithValue('Failed to create order');
+    } catch (error) {
+      const msg = error.response?.data?.message || 'Failed to create order';
+      return rejectWithValue(msg);
+    }
   }
 );
 
 export const fetchAllOrders = createAsyncThunk(
   'orders/fetchAllOrders',
-  async () => {
-    // const response = await fetch('/api/orders/all');
-    // return await response.json();
-    return [
-      { id: 'ORD-123', userId: 'user1', userName: 'John Doe', date: '2026-05-01', total: 125.99, status: 'Delivered', items: 3 },
-      { id: 'ORD-456', userId: 'user1', userName: 'John Doe', date: '2026-05-06', total: 45.00, status: 'Processing', items: 1 },
-      { id: 'ORD-789', userId: 'user2', userName: 'Jane Smith', date: '2026-05-07', total: 89.50, status: 'Shipped', items: 2 },
-      { id: 'ORD-101', userId: 'user3', userName: 'Bob Johnson', date: '2026-05-08', total: 210.00, status: 'Processing', items: 5 }
-    ]; // Mock data for all users
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get('/admin/orders');
+      return response.data.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to fetch all orders');
+    }
   }
 );
 
@@ -30,7 +48,7 @@ const orderSlice = createSlice({
   name: 'orders',
   initialState: {
     items: [],
-    allOrders: [], // New state for admin
+    allOrders: [],
     status: 'idle',
     adminStatus: 'idle',
     error: null,
@@ -45,12 +63,23 @@ const orderSlice = createSlice({
         state.status = 'succeeded';
         state.items = action.payload;
       })
+      .addCase(fetchOrders.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      })
+      .addCase(createOrder.fulfilled, (state, action) => {
+        state.items.unshift(action.payload);
+      })
       .addCase(fetchAllOrders.pending, (state) => {
         state.adminStatus = 'loading';
       })
       .addCase(fetchAllOrders.fulfilled, (state, action) => {
         state.adminStatus = 'succeeded';
         state.allOrders = action.payload;
+      })
+      .addCase(fetchAllOrders.rejected, (state, action) => {
+        state.adminStatus = 'failed';
+        state.error = action.payload;
       });
   },
 });

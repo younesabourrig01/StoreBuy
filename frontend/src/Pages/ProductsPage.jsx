@@ -132,8 +132,9 @@ const ProductsPage = () => {
       }}>
         {filteredItems.length > 0 ? (
           filteredItems.map((product) => (
-            <Card key={product.id} product={product} />
+            <Card key={product._id || product.id} product={product} />
           ))
+
         ) : status === 'succeeded' && (
           <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem' }}>
             <h3 style={{ fontSize: '1.5rem', color: 'var(--text-light)' }}>No products found matching "{debouncedTerm}"</h3>

@@ -1,20 +1,25 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutUser } from '../store/authSlice';
+
 import logo from '../assets/logo.png';
 
 const Header = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
   const cartItems = useSelector(state => state.cart.items);
   const favoriteItems = useSelector(state => state.favorites.items);
   const notificationItems = useSelector(state => state.notifications.items);
+  const { user: currentUser, token } = useSelector(state => state.auth);
+  const isAuthenticated = !!token;
 
   const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
   const favoriteCount = favoriteItems.length;
-  const unreadNotifications = notificationItems.filter(n => !n.read).length;
+  const unreadNotifications = notificationItems.filter(n => !n.isRead).length;
 
-  const { isAuthenticated, currentUser } = useSelector(state => state.user);
 
   return (
     <header style={headerStyle} className="main-header">
@@ -81,21 +86,34 @@ const Header = () => {
         </ul>
         
         {isAuthenticated ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="user-section">
-            <Link to="/profile" onClick={() => setIsMenuOpen(false)} style={profileLinkStyle}>
-              <img src={currentUser.image} alt="User" style={avatarStyle} />
-              <span className="user-name" style={{ fontWeight: '700', color: 'var(--dark-green)', fontSize: '0.9rem' }}>{currentUser.name.split(' ')[0]}</span>
+          <div style={{ display: 'flex', alignItems: 'center' }} className="user-section">
+            <Link to={currentUser?.role === 'admin' ? "/admin-dashboard" : "/profile"} onClick={() => setIsMenuOpen(false)} style={profileLinkStyle}>
+              <img 
+                src={currentUser?.image 
+                  ? `http://localhost:4000/api/auth/uploads/${encodeURIComponent(currentUser.image.replace(/\\/g, '/'))}` 
+                  : 'https://via.placeholder.com/150'} 
+                alt="User" 
+                style={avatarStyle} 
+              />
+
+              <span className="user-name" style={{ fontWeight: '700', color: 'var(--dark-green)', fontSize: '0.9rem' }}>
+                {currentUser?.name?.split(' ')[0]}
+              </span>
             </Link>
           </div>
         ) : (
-          <button 
-            onClick={() => { setIsMenuOpen(false); navigate('/register'); }}
-            style={authBtnStyle}
-            className="register-btn"
-          >
-            Register
-          </button>
+          <div style={{ display: 'flex', gap: '0.8rem' }}>
+            <Link to="/login" onClick={() => setIsMenuOpen(false)} style={{ ...linkStyle, padding: '0.7rem 1rem' }}>Login</Link>
+            <button 
+              onClick={() => { setIsMenuOpen(false); navigate('/register'); }}
+              style={authBtnStyle}
+              className="register-btn"
+            >
+              Register
+            </button>
+          </div>
         )}
+
       </nav>
 
       <style>{`

@@ -56,7 +56,7 @@ func generatePassword(w http.ResponseWriter, r *http.Request) {
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "5005"
+		port = "5006"
 	}
 
 	http.HandleFunc("/api/tools/password", generatePassword)

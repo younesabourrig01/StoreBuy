@@ -11,10 +11,28 @@ import FavoritesPage from './Pages/FavoritesPage';
 import ProfilePage from './Pages/ProfilePage';
 import NotificationPage from './Pages/NotificationPage';
 import AdminDashboard from './Pages/AdminDashboard';
-import './App.css';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchFavorites } from './store/favoritesSlice';
+import { fetchCart } from './store/cartSlice';
+import { fetchNotifications } from './store/notificationSlice';
+
 
 function App() {
+  const dispatch = useDispatch();
+  const { token } = useSelector(state => state.auth);
+
+  useEffect(() => {
+    if (token) {
+      dispatch(fetchFavorites());
+      dispatch(fetchCart());
+      dispatch(fetchNotifications());
+    }
+  }, [token, dispatch]);
+
+
   return (
+
     <Router>
       <Toaster position="top-center" reverseOrder={false} />
       <Layout>

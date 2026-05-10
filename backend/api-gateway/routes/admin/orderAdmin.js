@@ -8,15 +8,17 @@ module.exports = (app) => {
     "/api/admin/orders",
     auth,
     role("admin"),
+    (req, res, next) => {
+      req.headers["x-internal-secret"] = process.env.INTERNAL_SECRET;
+      req.headers["x-user-role"] = req.user.role;
+      next();
+    },
     createProxyMiddleware({
       target: ORDER_SERVICE,
       changeOrigin: true,
-      pathRewrite: {
-        "^/": "/api/admin/orders/",
-      },
-      onProxyReq: (proxyReq, req, res) => {
-        proxyReq.setHeader("x-internal-secret", process.env.INTERNAL_SECRET);
-        proxyReq.setHeader("x-user-role", req.user.role);
+      pathRewrite: (path) => {
+        const newPath = "/api/admin/orders" + (path.startsWith("/") ? path : "/" + path);
+        return newPath;
       },
     }),
   );
