@@ -90,6 +90,7 @@ services:
       - PORT=5003
       - MONGO_URI_CART_DB=mongodb://mongodb:27017/cart
       - INTERNAL_SECRET=thwnjfiw12n3j4n089cjnn3nslpi34
+      - PRODUCT_SERVICE=http://product-service:5001
     depends_on:
       - mongodb
     networks:
@@ -104,6 +105,7 @@ services:
       - PORT=5002
       - MONGO_URI_FAVORITES_DB=mongodb://mongodb:27017/favorites
       - INTERNAL_SECRET=thwnjfiw12n3j4n089cjnn3nslpi34
+      - PRODUCT_SERVICE=http://product-service:5001
     depends_on:
       - mongodb
     networks:
