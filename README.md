@@ -4,14 +4,16 @@ StoreBuy is an e-commerce website built from the ground up using a **Microservic
 
 ## Tech Stack & Languages Used
 
-This project utilizes a modern technology stack to ensure high performance and scalability:
-
-- **Frontend:** React.js (Vite), Redux Toolkit, CSS
-- **Backend Services:** Node.js, Express.js
-- **Microservices Communication:** REST APIs & RabbitMQ (Message Broker)
-- **Database:** MongoDB
-- **Tools Service:** Go (Golang) - used for the high-performance password generator service.
-- **Infrastructure:** Docker & Docker Compose
+![React](https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
+![Redux](https://img.shields.io/badge/redux-%23593d88.svg?style=for-the-badge&logo=redux&logoColor=white)
+![CSS3](https://img.shields.io/badge/css3-%231572B6.svg?style=for-the-badge&logo=css3&logoColor=white)
+![NodeJS](https://img.shields.io/badge/node.js-%23339933.svg?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+![Go](https://img.shields.io/badge/go-%2300ADD8.svg?style=for-the-badge&logo=go&logoColor=white)
+![RabbitMQ](https://img.shields.io/badge/Rabbitmq-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
 
 ### Microservices Breakdown:
 - **API Gateway:** Central entry point routing requests to all internal microservices.
@@ -31,8 +33,8 @@ The backend infrastructure is fully dockerized, making it incredibly easy to spi
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/younesabourrig01/fileRouge.git
-cd fileRouge
+git clone https://github.com/younesabourrig01/StoreBuy.git
+cd StoreBuy
 ```
 ### Step 2: Run the Backend Services using Docker
 Start the API Gateway, all microservices, MongoDB, and RabbitMQ using Docker Compose:
